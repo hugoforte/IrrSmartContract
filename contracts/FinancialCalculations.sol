@@ -6,8 +6,8 @@ contract FinancialCalculations {
     constructor() {
     }
 
-    function irr(uint guess) public pure returns(uint){
-        uint retVal = guess;
+    function irr(int[] memory cashFlows, int guess) public pure returns(int){
+        int retVal = guess;
         return retVal;
     }
 }

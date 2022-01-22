@@ -6,6 +6,8 @@ describe("FinancialCalculations", function () {
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
     const financialCalculations = await FinancialCalculations.deploy();
     await financialCalculations.deployed();
-    expect(await financialCalculations.irr(10)).to.equal(10);
+    var guess = 10;
+    var cashFlows = [-100,14,25,16,12,79,36,42]
+    expect(await financialCalculations.irr(cashFlows, guess)).to.equal(guess);
   });
 });
