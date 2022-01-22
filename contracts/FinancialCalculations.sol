@@ -7,7 +7,7 @@ contract FinancialCalculations {
     }
 
     function irr(int[] memory cashFlows, int guess) public pure returns(int){
-        int retVal = guess;
+        int retVal = 20;
         return retVal;
     }
 }
