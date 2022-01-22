@@ -1,8 +1,18 @@
 #IrrSmartContract
+##Dependencies
 
-This project demonstrates a basic Hardsshat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts.
+##Releases
+0.2
+Time spent ~45 min: 08:34 - 09:15
+- [x]  Create stub function `function irr(int[] memory values, int guess) external pure returns(int)` that returns a static variable
+- [x]  Set up a passing test
+0.1
+Time spent ~1hr: 07:31 - 08:32
+- [x] Decide on [[ganache-cli]] vs [[Hardhat]] - decided on HardHat
+- [x] Create a hello world smart contract
+- [x] Set up a test framework and create a hello world test
+- [x] Cleaned up references
 
-Try running some of the following tasks:
 
 ```shell
 npx hardhat accounts
