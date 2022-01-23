@@ -42,11 +42,10 @@ contract FinancialCalculations {
     function calcIrrPolynomial(int cashFlow, int estimatedReturnRate, uint period) public pure returns(int){
         int retVal = 0;
         int one = newFixed(1);
-                
-        // int numerator = newFixed(cashFlow);
-        // int addedOneToEstimatedReturnRate = add(one, estimatedReturnRate);
-        // int denominator = power(addedOneToEstimatedReturnRate, period);
-        // int retVal = divide(numerator, denominator);
+        int numerator = cashFlow;
+        int addedOneToEstimatedReturnRate = add(one, estimatedReturnRate);
+        int denominator = power(addedOneToEstimatedReturnRate, period);
+        retVal = divide(numerator, denominator);
         return retVal;
     }
 
