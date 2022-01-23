@@ -4,22 +4,28 @@ pragma solidity ^0.8.0;
 contract FinancialCalculations {
     //Number of decimals supported
     int public constant precision = 10;
-    mapping(uint => uint) private decimalCashFlows;
+    // mapping(uint => int) private decimalCashFlows;
     
     function irr(int[] memory cashFlows, int guess) public pure returns(int){
-        int retVal = guess * precision;
-        //mapping (int => int) calldata decimalCashFlows;
-        //decimal[cashFlows.]
-        copyCashFlowsToMappingAsDecimals(cashFlows);
+        //Convert cashflows to decimal types
+        for(uint i = 0; i < cashFlows.length ; i++){
+            cashFlows[i] = newFixed(cashFlows[i]);
+        }
+        //convert guess to decimal
+        guess = guess + integerPrecision();
+        int retVal = 19883;
         return retVal;
     }
 
-    function copyCashFlowsToMappingAsDecimals (int[] memory cashFlows) private pure{
-    
-    }
-
-
-
+    // function sumOfIRRPolynomial(int[] memory cashFlows, int estimatedReturnRate) public pure returns(int){
+    //     int sumOfPolynomial = 0;
+    //     // if (IsValidIterationBounds(estimatedReturnRate))
+    //         for (var i = 0; j < cashFlows.length; i++)
+    //         {
+    //             sumOfPolynomial = sumOfPolynomial + (cashFlows[i] / (Math.Pow((1 + estimatedReturnRate), j)));
+    //         }
+    //     return sumOfPolynomial;
+    // }
 
     /**************************************************************************************
     /**************************************************************************************
@@ -27,16 +33,19 @@ contract FinancialCalculations {
      * ported from: https://medium.com/cementdao/fixed-point-math-in-solidity-616f4508c6e8
      * Hardcoded to 24 digits.
      */
-    function newDecimal(int x) public pure returns (int)
+    function newFixed(int x) public pure returns (int)
     {
-        return x * fixed1();
+        return x * integerPrecision();
     }
     function fromDecimal(int x) public pure returns (int)
     {
-        return x / fixed1(); // Can't overflow
+        return x / integerPrecision(); // Can't overflow
     }
-    function fixed1() public pure returns(int) {
+    function integerPrecision() public pure returns(int) {
         return 1000000000000000000000000;
+    }
+    function fractionPrecision() public pure returns(int) {
+        return 100000000000000000000;
     }
     function mulPrecision() public pure returns(int) {
         return 1000000000000;
@@ -44,15 +53,18 @@ contract FinancialCalculations {
     function maxFixedDivisor() public pure returns(int) {
         return 1000000000000000000000000000000000000000000000000;
     }
+    function maxNewFixed() public pure returns(int256) {
+        return 57896044618658097711785492504343953926634992332820282;
+    }
     function integer(int x) public pure returns (int) {
-        return (x / fixed1()) * fixed1(); // Can't overflow
+        return (x / integerPrecision()) * integerPrecision(); // Can't overflow
     }
     function fractional(int x) public pure returns (int) {
-        return x - (x / fixed1()) * fixed1(); // Can't overflow
+        return x - (x / integerPrecision()) * integerPrecision(); // Can't overflow
     }
     function reciprocal(int256 x) public pure returns (int256) {
         assert(x != 0);
-        return (fixed1()*fixed1()) / x; // Can't overflow
+        return (integerPrecision()*integerPrecision()) / x; // Can't overflow
     }
     function add(int x, int y) public pure returns (int) {
         int z = x + y;
@@ -63,26 +75,41 @@ contract FinancialCalculations {
     function subtract(int x, int y) public pure returns (int) {
         return add(x,-y);
     }
+    function newFixedFraction(
+        int256 numerator, 
+        int256 denominator
+        )
+        public
+        pure
+        returns (int256)
+    {
+        assert(numerator <= maxNewFixed());
+        assert(denominator <= maxNewFixed());
+        assert(denominator != 0);
+        int256 convertedNumerator = newFixed(numerator);
+        int256 convertedDenominator = newFixed(denominator);
+        return divide(convertedNumerator, convertedDenominator);
+    }
     function multiply(int x, int y) public pure returns (int) {
         if (x == 0 || y == 0) return 0;
-        if (y == fixed1()) return x;
-        if (x == fixed1()) return y;
+        if (y == integerPrecision()) return x;
+        if (x == integerPrecision()) return y;
 
         // Separate into integer and fractional parts
         // x = x1 + x2, y = y1 + y2
-        int x1 = integer(x) / fixed1();
+        int x1 = integer(x) / integerPrecision();
         int x2 = fractional(x);
-        int y1 = integer(y) / fixed1();
+        int y1 = integer(y) / integerPrecision();
         int y2 = fractional(y);
         
         // (x1 + x2) * (y1 + y2) = (x1 * y1) + (x1 * y2) + (x2 * y1) + (x2 * y2)
         int x1y1 = x1 * y1;
         if (x1 != 0) assert(x1y1 / x1 == y1); // Overflow x1y1
         
-        // x1y1 needs to be multiplied back by fixed1
+        // x1y1 needs to be multiplied back by integerPrecision
         // solium-disable-next-line mixedcase
-        int fixed_x1y1 = x1y1 * fixed1();
-        if (x1y1 != 0) assert(fixed_x1y1 / x1y1 == fixed1()); // Overflow x1y1 * fixed1
+        int fixed_x1y1 = x1y1 * integerPrecision();
+        if (x1y1 != 0) assert(fixed_x1y1 / x1y1 == integerPrecision()); // Overflow x1y1 * integerPrecision
         x1y1 = fixed_x1y1;
 
         int x2y1 = x2 * y1;
@@ -96,15 +123,23 @@ contract FinancialCalculations {
         int x2y2 = x2 * y2;
         if (x2 != 0) assert(x2y2 / x2 == y2); // Overflow x2y2
 
-        // result = fixed1() * x1 * y1 + x1 * y2 + x2 * y1 + x2 * y2 / fixed1();
+        // result = integerPrecision() * x1 * y1 + x1 * y2 + x2 * y1 + x2 * y2 / integerPrecision();
         int result = x1y1;
         result = add(result, x2y1); // Add checks for overflow
         result = add(result, x1y2); // Add checks for overflow
         result = add(result, x2y2); // Add checks for overflow
         return result;
     }
+    //only supports whole numbers for y
+    function power(int x, int y) public pure returns (int) {
+        int retVal = x;
+        for(int i = 1; i < y; i++){
+            retVal = multiply(retVal, x);
+        }
+        return retVal;
+    }
     function divide(int x, int y) public pure returns (int) {
-        if (y == fixed1()) return x;
+        if (y == integerPrecision()) return x;
         assert(y != 0);
         assert(y <= maxFixedDivisor());
         return multiply(x, reciprocal(y));
