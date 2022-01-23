@@ -18,12 +18,12 @@ describe("FinancialCalculations", function () {
     expect(actual).to.equal(expected);
   });
 
-  it("Should calculate IRRPolynomial", async function () {
+  it("Should calculate IRRPolynomial for initial cash position", async function () {
     //Arrange
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
     const financialCalculations = await FinancialCalculations.deploy();
     await financialCalculations.deployed();
-    var integerPrecision = await financialCalculations.integerPrecision();
+
     var cashFlow = await financialCalculations.newFixed(-100);
     var estimate = await financialCalculations.newFixedFraction(1, 10);
 
@@ -32,7 +32,26 @@ describe("FinancialCalculations", function () {
     var actual = await financialCalculations.integer(irrPolynomial);
 
     //Assert
-    AssertIntegersAreEqual(irrPolynomial, -100);
+    AssertIntegersAreEqual(actual, -100);
+  });
+
+  it("Should calculate IRRPolynomial for first period", async function () {
+    //Arrange
+    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
+    const financialCalculations = await FinancialCalculations.deploy();
+    await financialCalculations.deployed();
+    var integerPrecision = await financialCalculations.integerPrecision();
+    var cashFlow = await financialCalculations.newFixed(14);
+    var estimate = await financialCalculations.newFixedFraction(1, 10);
+
+    //Act
+    var irrPolynomial = await financialCalculations.calcIrrPolynomial(cashFlow, estimate, 1);
+    var integerPart = await financialCalculations.integer(irrPolynomial);
+    var decimalPart = await financialCalculations.fractional(irrPolynomial);
+
+    //Assert
+    AssertIntegersAreEqual(integerPart, 12);
+    AssertDecimalsAreEqual(decimalPart, 727272, 6);
   });
 
   // it("Should calculate sumOfIRRPolynomial", async function () {
@@ -74,7 +93,9 @@ describe("FinancialCalculations", function () {
   }
 
   function AssertDecimalsAreEqual(actual, expected, precision) {
-    var intPrecision = 1000000000000000000000000;
-    expect(actual * precision / intPrecision).to.equal(expected);
+    var decimalMaxPrecision = 100000000000000000000000;
+    var maxPrecisionForDecimal = 23;
+    var divisorToGetPrecision =  decimalMaxPrecision/(10 ** (precision-1))
+    expect(Math.trunc(actual / divisorToGetPrecision)).to.equal(expected);
   }
 });

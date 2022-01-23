@@ -1,7 +1,7 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("FinancialCalculations", function () {
+describe("MathTests", function () {
   it("Should Multiply correctly", async function () {
     //Arrange
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
@@ -122,7 +122,7 @@ describe("FinancialCalculations", function () {
 
     //Assert
     AssertIntegersAreEqual(integer, 1);
-    AssertDecimalsAreEqual(decimal, 1, 10);
+    AssertDecimalsAreEqual(decimal, 10, 2);
   });
 
   it("Should be able to do 1.1 ^ 1", async function () {
@@ -177,7 +177,12 @@ describe("FinancialCalculations", function () {
   }
 
   function AssertDecimalsAreEqual(actual, expected, precision) {
-    var intPrecision = 1000000000000000000000000;
-    expect(actual * precision / intPrecision).to.equal(expected);
+    var decimalMaxPrecision = 100000000000000000000000;
+    var maxPrecisionForDecimal = 23;
+    var divisorToGetPrecision =  decimalMaxPrecision/(10 ** (precision-1))
+    expect(actual / (decimalMaxPrecision/10)).to.equal(expected);
+    expect(divisorToGetPrecision).to.equal(decimalMaxPrecision/10);
+
+    expect(actual / divisorToGetPrecision).to.equal(expected);
   }
 });
