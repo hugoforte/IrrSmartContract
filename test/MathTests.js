@@ -149,10 +149,26 @@ describe("FinancialCalculations", function () {
     var onePointOne = await financialCalculations.newFixedFraction(11, 10);
 
     //Act
-    var zero = await financialCalculations.power(onePointOne, 0);
+    var one = await financialCalculations.power(onePointOne, 0);
 
     //Assert
-    expect(zero).to.equal(0);
+    AssertIntegersAreEqual(one, 1);
+  });
+
+  it("Should be able to do -100 / 1", async function () {
+    //Arrange
+    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
+    const financialCalculations = await FinancialCalculations.deploy();
+    await financialCalculations.deployed();
+
+    var negOneHundred = await financialCalculations.newFixed(-100);
+    var one = await financialCalculations.newFixed(1);
+
+    //Act
+    var actual = await financialCalculations.divide(negOneHundred, one);
+
+    //Assert
+    AssertIntegersAreEqual(actual, -100);
   });
 
   function AssertIntegersAreEqual(actual, expected) {
