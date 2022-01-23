@@ -55,7 +55,7 @@ describe("FinancialCalculations", function () {
     expect(decimal * fractionPrecision / integerPrecision).to.equal(decimalExpected);
   });
 
-  it("Should be able to do 1.5 ^ 2 = 2.25", async function () {
+  it("Should be able to do powers math", async function () {
     //Arrange
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
     const financialCalculations = await FinancialCalculations.deploy();
@@ -73,7 +73,6 @@ describe("FinancialCalculations", function () {
     //Assert
     expect(secondPowerResult).to.equal(expectedSecondPower);
     expect(fifthPowerResult).to.equal(expectedFifthPower);
-
   });
   
 });

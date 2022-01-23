@@ -6,13 +6,15 @@ contract FinancialCalculations {
     int public constant precision = 10;
     // mapping(uint => int) private decimalCashFlows;
     
+    //Guess only supports single decimals, 0.2 => 2, 0.09 will not work
     function irr(int[] memory cashFlows, int guess) public pure returns(int){
         //Convert cashflows to decimal types
         for(uint i = 0; i < cashFlows.length ; i++){
             cashFlows[i] = newFixed(cashFlows[i]);
         }
-        //convert guess to decimal
-        guess = guess + integerPrecision();
+
+        //Guess only supports single decimals, 0.2 => 2, 0.09 will not work, I'm assuming 10 as the fraction
+        guess = newFixedFraction(guess, 10);
         int retVal = 19883;
         return retVal;
     }
@@ -28,10 +30,12 @@ contract FinancialCalculations {
     // }
 
     /**************************************************************************************
-    /**************************************************************************************
-    /**************************************************************************************    
+    ***************************************************************************************
+    ***************************************************************************************
      * ported from: https://medium.com/cementdao/fixed-point-math-in-solidity-616f4508c6e8
      * Hardcoded to 24 digits.
+    ***************************************************************************************
+    ***************************************************************************************
      */
     function newFixed(int x) public pure returns (int)
     {
@@ -43,9 +47,6 @@ contract FinancialCalculations {
     }
     function integerPrecision() public pure returns(int) {
         return 1000000000000000000000000;
-    }
-    function fractionPrecision() public pure returns(int) {
-        return 100000000000000000000;
     }
     function mulPrecision() public pure returns(int) {
         return 1000000000000;
@@ -75,14 +76,7 @@ contract FinancialCalculations {
     function subtract(int x, int y) public pure returns (int) {
         return add(x,-y);
     }
-    function newFixedFraction(
-        int256 numerator, 
-        int256 denominator
-        )
-        public
-        pure
-        returns (int256)
-    {
+    function newFixedFraction(int256 numerator, int256 denominator)public pure returns (int256){
         assert(numerator <= maxNewFixed());
         assert(denominator <= maxNewFixed());
         assert(denominator != 0);
