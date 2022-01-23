@@ -92,6 +92,20 @@ describe("FinancialCalculations", function () {
     expect(fifthPowerResult).to.equal(expectedFifthPower);
   });
 
+  it("Should be to store a negative as a fraction", async function () {
+    //Arrange
+    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
+    const financialCalculations = await FinancialCalculations.deploy();
+    await financialCalculations.deployed();
+
+
+    //Act
+    var negativeOneHundred = await financialCalculations.newFixed(-100);
+
+    //Assert
+    AssertIntegersAreEqual(negativeOneHundred, -100);
+  });
+
   it("Should be able to add 1 to 0.1", async function () {
     //Arrange
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
@@ -109,6 +123,36 @@ describe("FinancialCalculations", function () {
     //Assert
     AssertIntegersAreEqual(integer, 1);
     AssertDecimalsAreEqual(decimal, 1, 10);
+  });
+
+  it("Should be able to do 1.1 ^ 1", async function () {
+    //Arrange
+    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
+    const financialCalculations = await FinancialCalculations.deploy();
+    await financialCalculations.deployed();
+
+    var onePointOne = await financialCalculations.newFixedFraction(11, 10);
+
+    //Act
+    var onePointOneToThePowerOfOne = await financialCalculations.power(onePointOne, 1);
+
+    //Assert
+    expect(onePointOneToThePowerOfOne).to.equal(onePointOne);
+  });
+
+  it("Should be able to do 1.1 ^ 0", async function () {
+    //Arrange
+    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
+    const financialCalculations = await FinancialCalculations.deploy();
+    await financialCalculations.deployed();
+
+    var onePointOne = await financialCalculations.newFixedFraction(11, 10);
+
+    //Act
+    var zero = await financialCalculations.power(onePointOne, 0);
+
+    //Assert
+    expect(zero).to.equal(0);
   });
 
   function AssertIntegersAreEqual(actual, expected) {

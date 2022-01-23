@@ -147,6 +147,8 @@ contract FinancialCalculations {
     }
     //only supports whole numbers for y
     function power(int x, uint y) public pure returns (int) {
+        if(y == 0)
+            return 0;
         int retVal = x;
         for(uint i = 1; i < y; i++){
             retVal = multiply(retVal, x);
