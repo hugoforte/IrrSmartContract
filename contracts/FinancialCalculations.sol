@@ -9,9 +9,10 @@ contract FinancialCalculations {
     //Guess only supports single decimals, 0.2 => 2, 0.09 will not work
     function irr(int[] memory cashFlows, int guess) public pure returns(int){
         //Convert cashflows to decimal types
-        for(uint i = 0; i < cashFlows.length ; i++){
-            cashFlows[i] = newFixed(cashFlows[i]);
-        }
+        // for(uint i = 0; i < cashFlows.length ; i++){
+        //     cashFlows[i] = newFixed(cashFlows[i]);
+        // }
+        // convertArray(cashFlows);
 
         //Guess only supports single decimals, 0.2 => 2, 0.09 will not work, I'm assuming 10 as the fraction
         guess = newFixedFraction(guess, 10);
@@ -19,15 +20,35 @@ contract FinancialCalculations {
         return retVal;
     }
 
-    // function sumOfIRRPolynomial(int[] memory cashFlows, int estimatedReturnRate) public pure returns(int){
-    //     int sumOfPolynomial = 0;
-    //     // if (IsValidIterationBounds(estimatedReturnRate))
-    //         for (var i = 0; j < cashFlows.length; i++)
-    //         {
-    //             sumOfPolynomial = sumOfPolynomial + (cashFlows[i] / (Math.Pow((1 + estimatedReturnRate), j)));
-    //         }
-    //     return sumOfPolynomial;
-    // }
+    function convertArray(int[] memory cashFlows) public pure{
+        // int[] retVal memory;
+        for(uint i = 0; i < cashFlows.length ; i++){
+            cashFlows[i] = newFixed(cashFlows[i]);
+        }
+    }
+
+    function calcSumIrrPolynomial(int[] memory cashFlows, int estimatedReturnRate) public pure returns(int){
+        int sumOfPolynomial = 0;
+        int one = newFixed(1);
+        // if (IsValidIterationBounds(estimatedReturnRate))
+            for (uint i = 0; i < cashFlows.length; i++)
+            {
+                int irrPolynomial = calcIrrPolynomial(cashFlows[i], estimatedReturnRate, i);
+                sumOfPolynomial = add(sumOfPolynomial,irrPolynomial);
+            }
+        return sumOfPolynomial;
+    }
+
+    function calcIrrPolynomial(int cashFlow, int estimatedReturnRate, uint period) public pure returns(int){
+        int retVal = 0;
+        int one = newFixed(1);
+                
+        // int numerator = newFixed(cashFlow);
+        // int addedOneToEstimatedReturnRate = add(one, estimatedReturnRate);
+        // int denominator = power(addedOneToEstimatedReturnRate, period);
+        // int retVal = divide(numerator, denominator);
+        return retVal;
+    }
 
     /**************************************************************************************
     ***************************************************************************************
@@ -125,9 +146,9 @@ contract FinancialCalculations {
         return result;
     }
     //only supports whole numbers for y
-    function power(int x, int y) public pure returns (int) {
+    function power(int x, uint y) public pure returns (int) {
         int retVal = x;
-        for(int i = 1; i < y; i++){
+        for(uint i = 1; i < y; i++){
             retVal = multiply(retVal, x);
         }
         return retVal;

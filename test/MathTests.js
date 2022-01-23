@@ -17,7 +17,7 @@ describe("FinancialCalculations", function () {
     expect(actual).to.equal(expected);
   });
 
-  it("Should be able to extract a decimal", async function () {
+  it("Should be able to get an integer back", async function () {
     //Arrange
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
     const financialCalculations = await FinancialCalculations.deploy();
@@ -26,10 +26,29 @@ describe("FinancialCalculations", function () {
     var expected = 123;
 
     //Act
-    var actual = await financialCalculations.fractional(integerPrecision + expected);
+    var actual = await financialCalculations.newFixed(expected);
 
     //Assert
-    expect(actual).to.equal(expected);
+    expect(actual/integerPrecision).to.equal(expected);
+  });
+
+  it("Should be able to get a fraction back", async function () {
+    //Arrange
+    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
+    const financialCalculations = await FinancialCalculations.deploy();
+    await financialCalculations.deployed();
+    var integerPrecision = await financialCalculations.integerPrecision();
+    var decimalExpected = 123;
+    var fractionPrecision = 1000;
+
+    //Act
+    var decimalNumber = await financialCalculations.newFixedFraction(decimalExpected, fractionPrecision);
+    var integer = await financialCalculations.integer(decimalNumber);
+    var decimal = await financialCalculations.fractional(decimalNumber);
+
+    //Assert
+    expect(integer/integerPrecision).to.equal(0);
+    expect(decimal * fractionPrecision / integerPrecision).to.equal(decimalExpected);
   });
 
   it("Should be able to store 12.345", async function () {
@@ -43,12 +62,10 @@ describe("FinancialCalculations", function () {
     var integerPrecision = await financialCalculations.integerPrecision();
     var fractionPrecision = 10 ** decimalPlaces;
 
-    fractionPrecision
-    var decimalNumber = await financialCalculations.newFixedFraction(12334455, fractionPrecision);
-  
     //Act
-    var integer = await financialCalculations.integer(decimalNumber);
-    var decimal = await financialCalculations.fractional(decimalNumber);
+    var fraction = await financialCalculations.newFixedFraction(12334455, fractionPrecision);
+    var integer = await financialCalculations.integer(fraction);
+    var decimal = await financialCalculations.fractional(fraction);
 
     //Assert
     expect(integer/integerPrecision).to.equal(integerExpected);
@@ -74,5 +91,33 @@ describe("FinancialCalculations", function () {
     expect(secondPowerResult).to.equal(expectedSecondPower);
     expect(fifthPowerResult).to.equal(expectedFifthPower);
   });
-  
+
+  it("Should be able to add 1 to 0.1", async function () {
+    //Arrange
+    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
+    const financialCalculations = await FinancialCalculations.deploy();
+    await financialCalculations.deployed();
+
+    var zeroPointOne = await financialCalculations.newFixedFraction(1, 10);
+    var one = await financialCalculations.newFixed(1);
+
+    //Act
+    var onePointOne = await financialCalculations.add(one, zeroPointOne);
+    var integer = await financialCalculations.integer(onePointOne);
+    var decimal = await financialCalculations.fractional(onePointOne);
+
+    //Assert
+    AssertIntegersAreEqual(integer, 1);
+    AssertDecimalsAreEqual(decimal, 1, 10);
+  });
+
+  function AssertIntegersAreEqual(actual, expected) {
+    var intPrecision = 1000000000000000000000000;
+    expect(actual/intPrecision).to.equal(expected);
+  }
+
+  function AssertDecimalsAreEqual(actual, expected, precision) {
+    var intPrecision = 1000000000000000000000000;
+    expect(actual * precision / intPrecision).to.equal(expected);
+  }
 });
