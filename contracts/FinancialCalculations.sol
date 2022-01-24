@@ -36,6 +36,20 @@ contract FinancialCalculations {
         }
     }
 
+    function calcIrrPolynomial(
+        int256 cashFlow,
+        int256 estimatedReturnRate,
+        uint16 period
+    ) public pure returns (int256) {
+        int256 retVal = 0;
+        int256 one = newFixed(1);
+        int256 numerator = cashFlow;
+        int256 addedOneToEstimatedReturnRate = add(one, estimatedReturnRate);
+        int256 denominator = power(addedOneToEstimatedReturnRate, period);
+        retVal = divide(numerator, denominator);
+        return retVal;
+    }
+
     function calcSumIrrPolynomial(
         int256[] memory cashFlows,
         int256 estimatedReturnRate
@@ -53,18 +67,37 @@ contract FinancialCalculations {
         return sumOfPolynomial;
     }
 
-    function calcIrrPolynomial(
+    function calcIrrDerivative(
         int256 cashFlow,
         int256 estimatedReturnRate,
-        uint256 period
+        uint16 period
     ) public pure returns (int256) {
         int256 retVal = 0;
         int256 one = newFixed(1);
-        int256 numerator = cashFlow;
+        //Will throw for values our of range
+        int256 periodFraction = newFixed(int16(period));
+        int256 numerator = multiply(cashFlow, periodFraction);
         int256 addedOneToEstimatedReturnRate = add(one, estimatedReturnRate);
         int256 denominator = power(addedOneToEstimatedReturnRate, period);
         retVal = divide(numerator, denominator);
         return retVal;
+    }
+
+    function calcSumIrrDerivative(
+        int256[] memory cashFlows,
+        int256 estimatedReturnRate
+    ) public pure returns (int256) {
+        int256 sumOfDerivative = 0;
+        // if (IsValidIterationBounds(estimatedReturnRate))
+        for (uint16 i = 1; i < cashFlows.length; i++) {
+            int256 irrDerivative = calcIrrDerivative(
+                cashFlows[i],
+                estimatedReturnRate,
+                i
+            );
+            sumOfDerivative = add(sumOfDerivative, irrDerivative);
+        }
+        return multiply(sumOfDerivative, newFixed(-1));
     }
 
     /***************************************************************************************
