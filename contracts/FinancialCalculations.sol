@@ -17,20 +17,27 @@ contract FinancialCalculations {
             cashFlows[i] = newFixed(cashFlows[i]);
         }
         //Guess only supports single decimals, 0.2 => 2, 0.09 will not work
-        guess = newFixedFraction(guess, 10);
-        //Converte guess to fraction
-        //Convert cashflows to decimal types
-        // for(uint i = 0; i < cashFlows.length ; i++){
-        //     cashFlows[i] = newFixed(cashFlows[i]);
-        // }
-        // convertArray(cashFlows);
+        int convergingIrr = newFixedFraction(guess, 10);
+        int currentIrrPolynomial;
+        int currentDerivative;
+        int potentiallyConvergedPolynomial = 0;
+        int quotient;
 
-        int256 retVal = 19883;
-        return retVal;
+        currentIrrPolynomial = calcSumIrrPolynomial(cashFlows, convergingIrr);
+        while (!hasPolynomialConverged(potentiallyConvergedPolynomial)) {
+            currentDerivative = calcSumIrrDerivative(cashFlows, convergingIrr);
+            quotient = divide(currentIrrPolynomial, currentDerivative);
+            convergingIrr = subtract(convergingIrr, quotient);
+            currentDerivative = calcSumIrrPolynomial(cashFlows, convergingIrr);
+        }
+        return convergingIrr;
+    }
+
+    function hasPolynomialConverged(int256 irrPolynomial) public pure returns(bool) {
+        return true;
     }
 
     function convertArray(int256[] memory cashFlows) public pure {
-        // int[] retVal memory;
         for (uint256 i = 0; i < cashFlows.length; i++) {
             cashFlows[i] = newFixed(cashFlows[i]);
         }
