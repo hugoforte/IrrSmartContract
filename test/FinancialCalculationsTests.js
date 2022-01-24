@@ -40,7 +40,6 @@ describe("FinancialCalculations", function () {
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
     const financialCalculations = await FinancialCalculations.deploy();
     await financialCalculations.deployed();
-    var integerPrecision = await financialCalculations.integerPrecision();
     var cashFlow = await financialCalculations.newFixed(14);
     var estimate = await financialCalculations.newFixedFraction(1, 10);
 
@@ -54,22 +53,24 @@ describe("FinancialCalculations", function () {
     AssertDecimalsAreEqual(decimalPart, 727272, 6);
   });
 
-  // it("Should calculate sumOfIRRPolynomial", async function () {
-  //   //Arrange
-  //   const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
-  //   const financialCalculations = await FinancialCalculations.deploy();
-  //   await financialCalculations.deployed();
-  //   var guess = 1;
-  //   var cashFlows = [-100,14,25,16,12,79,36,42]
+  it("Should calculate sum of IRRPolynomial for a set of cashflows", async function () {
+    //Arrange
+    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
+    const financialCalculations = await FinancialCalculations.deploy();
+    await financialCalculations.deployed();
 
-  //   //Act
-  //   var actual = await financialCalculations.calcSumIrrPolynomial(cashFlows, guess);
+    var estimate = await financialCalculations.newFixedFraction(1, 10);
+    var cashFlows = [-100,14,25,16,12,79,36,42]
+    for (var i = 0; i < cashFlows.length; i++) {
+      cashFlows[i] = await financialCalculations.newFixed(cashFlows[i]);
+    }
 
-  //   //Assert
-  //   //44532115000171080
-  //   var expected = 2342;
-  //   expect(actual).to.equal(expected);
-  // });
+    //Act
+    var actual = await financialCalculations.calcSumIrrPolynomial(cashFlows, estimate);
+
+    //Assert
+    AssertDecimalsAreEqual(actual, 445321150, 7);
+  });
 
   it("Should convert array to fractions", async function () {
     //Arrange

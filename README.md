@@ -3,7 +3,8 @@
 ## Dependencies
 
 ## Trade-offs
-- Did a rudamentary math library - it sucks - power only supports whole numbers
+- Made all functions public for testing purposes - not something I'd do with productionalized code
+- Created a rudamentary math library - it sucks - power only supports whole numbers
 - Only supports -1 > IRR's < 1, assumes returns are decimals up to precision of 5 decimals
 - Will only accept whole dollar amounts for cashflows
 	- Could be refactored to do cents - but value of that is probably negligble

@@ -1,102 +1,133 @@
 pragma solidity ^0.8.0;
 
-
 contract FinancialCalculations {
     //Number of decimals supported
-    int public constant precision = 10;
+    int256 public constant precision = 10;
+
     // mapping(uint => int) private decimalCashFlows;
-    
+
     //Guess only supports single decimals, 0.2 => 2, 0.09 will not work
-    function irr(int[] memory cashFlows, int guess) public pure returns(int){
+    function irr(int256[] memory cashFlows, int256 guess)
+        public
+        pure
+        returns (int256)
+    {
+        //Convert cashflows to fractions
+        for (uint256 i = 0; i < cashFlows.length; i++) {
+            cashFlows[i] = newFixed(cashFlows[i]);
+        }
+        //Guess only supports single decimals, 0.2 => 2, 0.09 will not work
+        guess = newFixedFraction(guess, 10);
+        //Converte guess to fraction
         //Convert cashflows to decimal types
         // for(uint i = 0; i < cashFlows.length ; i++){
         //     cashFlows[i] = newFixed(cashFlows[i]);
         // }
         // convertArray(cashFlows);
 
-        //Guess only supports single decimals, 0.2 => 2, 0.09 will not work, I'm assuming 10 as the fraction
-        guess = newFixedFraction(guess, 10);
-        int retVal = 19883;
+        int256 retVal = 19883;
         return retVal;
     }
 
-    function convertArray(int[] memory cashFlows) public pure{
+    function convertArray(int256[] memory cashFlows) public pure {
         // int[] retVal memory;
-        for(uint i = 0; i < cashFlows.length ; i++){
+        for (uint256 i = 0; i < cashFlows.length; i++) {
             cashFlows[i] = newFixed(cashFlows[i]);
         }
     }
 
-    function calcSumIrrPolynomial(int[] memory cashFlows, int estimatedReturnRate) public pure returns(int){
-        int sumOfPolynomial = 0;
-        int one = newFixed(1);
+    function calcSumIrrPolynomial(
+        int256[] memory cashFlows,
+        int256 estimatedReturnRate
+    ) public pure returns (int256) {
+        int256 sumOfPolynomial = 0;
         // if (IsValidIterationBounds(estimatedReturnRate))
-            for (uint i = 0; i < cashFlows.length; i++)
-            {
-                int irrPolynomial = calcIrrPolynomial(cashFlows[i], estimatedReturnRate, i);
-                sumOfPolynomial = add(sumOfPolynomial,irrPolynomial);
-            }
+        for (uint16 i = 0; i < cashFlows.length; i++) {
+            int256 irrPolynomial = calcIrrPolynomial(
+                cashFlows[i],
+                estimatedReturnRate,
+                i
+            );
+            sumOfPolynomial = add(sumOfPolynomial, irrPolynomial);
+        }
         return sumOfPolynomial;
     }
 
-    function calcIrrPolynomial(int cashFlow, int estimatedReturnRate, uint period) public pure returns(int){
-        int retVal = 0;
-        int one = newFixed(1);
-        int numerator = cashFlow;
-        int addedOneToEstimatedReturnRate = add(one, estimatedReturnRate);
-        int denominator = power(addedOneToEstimatedReturnRate, period);
+    function calcIrrPolynomial(
+        int256 cashFlow,
+        int256 estimatedReturnRate,
+        uint256 period
+    ) public pure returns (int256) {
+        int256 retVal = 0;
+        int256 one = newFixed(1);
+        int256 numerator = cashFlow;
+        int256 addedOneToEstimatedReturnRate = add(one, estimatedReturnRate);
+        int256 denominator = power(addedOneToEstimatedReturnRate, period);
         retVal = divide(numerator, denominator);
         return retVal;
     }
 
-    /**************************************************************************************
-    ***************************************************************************************
-    ***************************************************************************************
+    /***************************************************************************************
+     ***************************************************************************************
+     ***************************************************************************************
      * ported from: https://medium.com/cementdao/fixed-point-math-in-solidity-616f4508c6e8
      * Hardcoded to 24 digits.
-    ***************************************************************************************
-    ***************************************************************************************
+     ***************************************************************************************
+     ***************************************************************************************
      */
-    function newFixed(int x) public pure returns (int)
-    {
+    function newFixed(int256 x) public pure returns (int256) {
         return x * integerPrecision();
     }
-    function fromDecimal(int x) public pure returns (int)
-    {
+
+    function fromDecimal(int256 x) public pure returns (int256) {
         return x / integerPrecision(); // Can't overflow
     }
-    function integerPrecision() public pure returns(int) {
+
+    function integerPrecision() public pure returns (int256) {
         return 1000000000000000000000000;
     }
-    function mulPrecision() public pure returns(int) {
+
+    function mulPrecision() public pure returns (int256) {
         return 1000000000000;
     }
-    function maxFixedDivisor() public pure returns(int) {
+
+    function maxFixedDivisor() public pure returns (int256) {
         return 1000000000000000000000000000000000000000000000000;
     }
-    function maxNewFixed() public pure returns(int256) {
+
+    function maxNewFixed() public pure returns (int256) {
         return 57896044618658097711785492504343953926634992332820282;
     }
-    function integer(int x) public pure returns (int) {
+
+    function integer(int256 x) public pure returns (int256) {
         return (x / integerPrecision()) * integerPrecision(); // Can't overflow
     }
-    function fractional(int x) public pure returns (int) {
+
+    function fractional(int256 x) public pure returns (int256) {
         return x - (x / integerPrecision()) * integerPrecision(); // Can't overflow
     }
+
     function reciprocal(int256 x) public pure returns (int256) {
         assert(x != 0);
-        return (integerPrecision()*integerPrecision()) / x; // Can't overflow
+        return (integerPrecision() * integerPrecision()) / x; // Can't overflow
     }
-    function add(int x, int y) public pure returns (int) {
-        int z = x + y;
+
+    function add(int256 x, int256 y) public pure returns (int256) {
+        int256 z = x + y;
         if (x > 0 && y > 0) assert(z > x && z > y);
         if (x < 0 && y < 0) assert(z < x && z < y);
         return z;
     }
-    function subtract(int x, int y) public pure returns (int) {
-        return add(x,-y);
+
+    function subtract(int256 x, int256 y) public pure returns (int256) {
+        return add(x, -y);
     }
-    function newFixedFraction(int256 numerator, int256 denominator)public pure returns (int256){
+
+    function newFixedFraction(int256 numerator, int256 denominator)
+        public
+        pure
+        returns (int256)
+    {
         assert(numerator <= maxNewFixed());
         assert(denominator <= maxNewFixed());
         assert(denominator != 0);
@@ -104,57 +135,59 @@ contract FinancialCalculations {
         int256 convertedDenominator = newFixed(denominator);
         return divide(convertedNumerator, convertedDenominator);
     }
-    function multiply(int x, int y) public pure returns (int) {
+
+    function multiply(int256 x, int256 y) public pure returns (int256) {
         if (x == 0 || y == 0) return 0;
         if (y == integerPrecision()) return x;
         if (x == integerPrecision()) return y;
 
         // Separate into integer and fractional parts
         // x = x1 + x2, y = y1 + y2
-        int x1 = integer(x) / integerPrecision();
-        int x2 = fractional(x);
-        int y1 = integer(y) / integerPrecision();
-        int y2 = fractional(y);
-        
+        int256 x1 = integer(x) / integerPrecision();
+        int256 x2 = fractional(x);
+        int256 y1 = integer(y) / integerPrecision();
+        int256 y2 = fractional(y);
+
         // (x1 + x2) * (y1 + y2) = (x1 * y1) + (x1 * y2) + (x2 * y1) + (x2 * y2)
-        int x1y1 = x1 * y1;
+        int256 x1y1 = x1 * y1;
         if (x1 != 0) assert(x1y1 / x1 == y1); // Overflow x1y1
-        
+
         // x1y1 needs to be multiplied back by integerPrecision
         // solium-disable-next-line mixedcase
-        int fixed_x1y1 = x1y1 * integerPrecision();
+        int256 fixed_x1y1 = x1y1 * integerPrecision();
         if (x1y1 != 0) assert(fixed_x1y1 / x1y1 == integerPrecision()); // Overflow x1y1 * integerPrecision
         x1y1 = fixed_x1y1;
 
-        int x2y1 = x2 * y1;
+        int256 x2y1 = x2 * y1;
         if (x2 != 0) assert(x2y1 / x2 == y1); // Overflow x2y1
 
-        int x1y2 = x1 * y2;
+        int256 x1y2 = x1 * y2;
         if (x1 != 0) assert(x1y2 / x1 == y2); // Overflow x1y2
 
         x2 = x2 / mulPrecision();
         y2 = y2 / mulPrecision();
-        int x2y2 = x2 * y2;
+        int256 x2y2 = x2 * y2;
         if (x2 != 0) assert(x2y2 / x2 == y2); // Overflow x2y2
 
         // result = integerPrecision() * x1 * y1 + x1 * y2 + x2 * y1 + x2 * y2 / integerPrecision();
-        int result = x1y1;
+        int256 result = x1y1;
         result = add(result, x2y1); // Add checks for overflow
         result = add(result, x1y2); // Add checks for overflow
         result = add(result, x2y2); // Add checks for overflow
         return result;
     }
+
     //only supports whole numbers for y
-    function power(int x, uint y) public pure returns (int) {
-        if(y == 0)
-            return newFixed(1);
-        int retVal = x;
-        for(uint i = 1; i < y; i++){
+    function power(int256 x, uint256 y) public pure returns (int256) {
+        if (y == 0) return newFixed(1);
+        int256 retVal = x;
+        for (uint256 i = 1; i < y; i++) {
             retVal = multiply(retVal, x);
         }
         return retVal;
     }
-    function divide(int x, int y) public pure returns (int) {
+
+    function divide(int256 x, int256 y) public pure returns (int256) {
         if (y == integerPrecision()) return x;
         assert(y != 0);
         assert(y <= maxFixedDivisor());
