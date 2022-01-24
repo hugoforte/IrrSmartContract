@@ -7,15 +7,60 @@ describe("FinancialCalculations", function () {
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
     const financialCalculations = await FinancialCalculations.deploy();
     await financialCalculations.deployed();
-    var guess = 2;
-    var cashFlows = [-100,14,25,16,12,79,36,42]
+    var guess = 1;
+    var cashFlows = [-100, 14, 25, 16, 12, 79, 36, 42]
 
     //Act
     var actual = await financialCalculations.irr(cashFlows, guess);
+    var integerPart = await financialCalculations.integer(actual);
+    var decimalPart = await financialCalculations.fractional(actual);
+
+    //Assert
+    AssertIntegersAreEqual(integerPart, 0);
+    AssertDecimalsAreEqual(decimalPart, 1694776342, 10);
+  });
+
+  it("Should return correct IRRWhenUsingFractions", async function () {
+    //Arrange
+    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
+    const financialCalculations = await FinancialCalculations.deploy();
+    await financialCalculations.deployed();
+    var cashFlows = [-100, 14, 25, 16, 12, 79, 36, 42]
+    var guess = await financialCalculations.newFixedFraction(1, 10);
+    var cashFlows = [-100, 14, 25, 16, 12, 79, 36, 42]
+    for (var i = 0; i < cashFlows.length; i++) {
+      cashFlows[i] = await financialCalculations.newFixed(cashFlows[i]);
+    }
+
+    //Act
+    var actual = await financialCalculations.irrUsingFractions(cashFlows, guess);
+    var integerPart = await financialCalculations.integer(actual);
+    var decimalPart = await financialCalculations.fractional(actual);
 
     //Assert
     var expected = 19883;
-    expect(actual).to.equal(expected);
+    AssertIntegersAreEqual(integerPart, 0);
+    AssertDecimalsAreEqual(decimalPart, 1694776342, 10);
+  });
+
+  it("Should be able to determine when the polynomial has converged", async function () {
+    //Arrange
+    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
+    const financialCalculations = await FinancialCalculations.deploy();
+    await financialCalculations.deployed();
+    var largerThanConvergence = await financialCalculations.newFixedFraction(1, 10 ** 5);
+    var onConvergence = await financialCalculations.newFixedFraction(1, 10 ** 6);
+    var smallerThanConvergence = await financialCalculations.newFixedFraction(1, 10 ** 7);
+
+    //Act
+    var largerShouldBeFalse = await financialCalculations.hasPolynomialConverged(largerThanConvergence);
+    var equalShouldBeTrue = await financialCalculations.hasPolynomialConverged(onConvergence);
+    var largerShouldBeTrue = await financialCalculations.hasPolynomialConverged(smallerThanConvergence);
+
+    //Assert
+    expect(largerShouldBeFalse).to.equal(false);
+    expect(equalShouldBeTrue).to.equal(true);
+    expect(largerShouldBeTrue).to.equal(true);
   });
 
   it("Should calculate IRRPolynomial for initial cash position", async function () {
@@ -69,7 +114,7 @@ describe("FinancialCalculations", function () {
     AssertIntegersAreEqual(integerPart, 12);
     AssertDecimalsAreEqual(decimalPart, 727272, 6);
   });
-  
+
   it("Should calculate sum of IRRPolynomial for a set of cashflows", async function () {
     //Arrange
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
@@ -77,7 +122,7 @@ describe("FinancialCalculations", function () {
     await financialCalculations.deployed();
 
     var estimate = await financialCalculations.newFixedFraction(1, 10);
-    var cashFlows = [-100,14,25,16,12,79,36,42]
+    var cashFlows = [-100, 14, 25, 16, 12, 79, 36, 42]
     for (var i = 0; i < cashFlows.length; i++) {
       cashFlows[i] = await financialCalculations.newFixed(cashFlows[i]);
     }
@@ -117,7 +162,7 @@ describe("FinancialCalculations", function () {
     await financialCalculations.deployed();
 
     var estimate = await financialCalculations.newFixedFraction(1, 10);
-    var cashFlows = [-100,14,25,16,12,79,36,42]
+    var cashFlows = [-100, 14, 25, 16, 12, 79, 36, 42]
     for (var i = 0; i < cashFlows.length; i++) {
       cashFlows[i] = await financialCalculations.newFixed(cashFlows[i]);
     }
@@ -140,7 +185,7 @@ describe("FinancialCalculations", function () {
     const financialCalculations = await FinancialCalculations.deploy();
     await financialCalculations.deployed();
     var guess = 1;
-    var cashFlows = [-100,14,25,16,12,79,36,42]
+    var cashFlows = [-100, 14, 25, 16, 12, 79, 36, 42]
 
     //Act
     await financialCalculations.convertArray(cashFlows);
@@ -152,13 +197,13 @@ describe("FinancialCalculations", function () {
 
   function AssertIntegersAreEqual(actual, expected) {
     var intPrecision = 1000000000000000000000000;
-    expect(Math.trunc(actual/intPrecision)).to.equal(expected);
+    expect(Math.trunc(actual / intPrecision)).to.equal(expected);
   }
 
   function AssertDecimalsAreEqual(actual, expected, precision) {
     var decimalMaxPrecision = 100000000000000000000000;
     var maxPrecisionForDecimal = 23;
-    var divisorToGetPrecision =  decimalMaxPrecision/(10 ** (precision-1))
+    var divisorToGetPrecision = decimalMaxPrecision / (10 ** (precision - 1))
     var actualTruncatedAndAbsoluted = Math.abs(Math.trunc(actual / divisorToGetPrecision))
     expect(actualTruncatedAndAbsoluted).to.equal(expected);
   }

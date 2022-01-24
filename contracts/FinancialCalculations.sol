@@ -1,40 +1,54 @@
 pragma solidity ^0.8.0;
 
-contract FinancialCalculations {
+    contract FinancialCalculations {
     //Number of decimals supported
-    int256 public constant precision = 10;
-
-    // mapping(uint => int) private decimalCashFlows;
-
-    //Guess only supports single decimals, 0.2 => 2, 0.09 will not work
+    uint256 public constant precision = 10;
+    
     function irr(int256[] memory cashFlows, int256 guess)
         public
         pure
         returns (int256)
     {
+        require((0 <= guess && guess <= 10), 
+            "Guess has to be a decimal representation between 1 (representing 10%) and 9(representing 90%");
+
         //Convert cashflows to fractions
         for (uint256 i = 0; i < cashFlows.length; i++) {
             cashFlows[i] = newFixed(cashFlows[i]);
         }
-        //Guess only supports single decimals, 0.2 => 2, 0.09 will not work
         int convergingIrr = newFixedFraction(guess, 10);
-        int currentIrrPolynomial;
-        int currentDerivative;
-        int potentiallyConvergedPolynomial = 0;
+
+        return irrUsingFractions(cashFlows, convergingIrr);
+    }
+
+    function irrUsingFractions(int256[] memory cashFlows, int256 convergingIrr)
+        public
+        pure
+        returns (int256)
+    {
+        //Guess only supports single decimals, 0.2 => 2, 0.09 will not work
+        int currentIrrPolynomial = 0;
+        int currentDerivative = 0;
         int quotient;
+        bool doMore = true;
 
         currentIrrPolynomial = calcSumIrrPolynomial(cashFlows, convergingIrr);
-        while (!hasPolynomialConverged(potentiallyConvergedPolynomial)) {
+        //while (hasPolynomialConverged(currentIrrPolynomial)) {
+        while (doMore) {
             currentDerivative = calcSumIrrDerivative(cashFlows, convergingIrr);
             quotient = divide(currentIrrPolynomial, currentDerivative);
             convergingIrr = subtract(convergingIrr, quotient);
-            currentDerivative = calcSumIrrPolynomial(cashFlows, convergingIrr);
+            currentIrrPolynomial = calcSumIrrPolynomial(cashFlows, convergingIrr);
+            doMore = false;
         }
         return convergingIrr;
     }
+    
 
     function hasPolynomialConverged(int256 irrPolynomial) public pure returns(bool) {
-        return true;
+        //TODO - fix hard coding
+        int convergencePoint = newFixedFraction(1, 10**6);
+        return irrPolynomial <= convergencePoint;
     }
 
     function convertArray(int256[] memory cashFlows) public pure {
@@ -232,5 +246,10 @@ contract FinancialCalculations {
         assert(y != 0);
         assert(y <= maxFixedDivisor());
         return multiply(x, reciprocal(y));
+    }
+
+    function abs(int x) private pure returns (int) 
+    {
+        return x >= 0 ? x : -x;
     }
 }
