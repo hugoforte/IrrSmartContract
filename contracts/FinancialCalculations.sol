@@ -1,22 +1,24 @@
 pragma solidity ^0.8.0;
 
-    contract FinancialCalculations {
+contract FinancialCalculations {
     //Number of decimals supported
     uint256 public constant precision = 10;
-    
+
     function irr(int256[] memory cashFlows, int256 guess)
         public
         pure
         returns (int256)
     {
-        require((0 <= guess && guess <= 10), 
-            "Guess has to be a decimal representation between 1 (representing 10%) and 9(representing 90%");
+        require(
+            (0 <= guess && guess <= 10),
+            "Guess has to be a decimal representation between 1 (representing 10%) and 9(representing 90%"
+        );
 
         //Convert cashflows to fractions
         for (uint256 i = 0; i < cashFlows.length; i++) {
             cashFlows[i] = newFixed(cashFlows[i]);
         }
-        int convergingIrr = newFixedFraction(guess, 10);
+        int256 convergingIrr = newFixedFraction(guess, 10);
 
         return irrUsingFractions(cashFlows, convergingIrr);
     }
@@ -27,9 +29,9 @@ pragma solidity ^0.8.0;
         returns (int256)
     {
         //Guess only supports single decimals, 0.2 => 2, 0.09 will not work
-        int currentIrrPolynomial = 0;
-        int currentDerivative = 0;
-        int quotient;
+        int256 currentIrrPolynomial = 0;
+        int256 currentDerivative = 0;
+        int256 quotient;
         bool doMore = true;
 
         currentIrrPolynomial = calcSumIrrPolynomial(cashFlows, convergingIrr);
@@ -38,16 +40,22 @@ pragma solidity ^0.8.0;
             currentDerivative = calcSumIrrDerivative(cashFlows, convergingIrr);
             quotient = divide(currentIrrPolynomial, currentDerivative);
             convergingIrr = subtract(convergingIrr, quotient);
-            currentIrrPolynomial = calcSumIrrPolynomial(cashFlows, convergingIrr);
+            currentIrrPolynomial = calcSumIrrPolynomial(
+                cashFlows,
+                convergingIrr
+            );
             doMore = false;
         }
         return convergingIrr;
     }
-    
 
-    function hasPolynomialConverged(int256 irrPolynomial) public pure returns(bool) {
+    function hasPolynomialConverged(int256 irrPolynomial)
+        public
+        pure
+        returns (bool)
+    {
         //TODO - fix hard coding
-        int convergencePoint = newFixedFraction(1, 10**6);
+        int256 convergencePoint = newFixedFraction(1, 10**6);
         return irrPolynomial <= convergencePoint;
     }
 
@@ -207,7 +215,6 @@ pragma solidity ^0.8.0;
         if (x1 != 0) assert(x1y1 / x1 == y1); // Overflow x1y1
 
         // x1y1 needs to be multiplied back by integerPrecision
-        // solium-disable-next-line mixedcase
         int256 fixed_x1y1 = x1y1 * integerPrecision();
         if (x1y1 != 0) assert(fixed_x1y1 / x1y1 == integerPrecision()); // Overflow x1y1 * integerPrecision
         x1y1 = fixed_x1y1;
@@ -248,8 +255,7 @@ pragma solidity ^0.8.0;
         return multiply(x, reciprocal(y));
     }
 
-    function abs(int x) private pure returns (int) 
-    {
+    function abs(int256 x) private pure returns (int256) {
         return x >= 0 ? x : -x;
     }
 }
