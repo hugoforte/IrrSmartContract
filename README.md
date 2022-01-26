@@ -33,15 +33,21 @@ to run from directory: `npx hardhat test`
 0.3 - Created IRR implementation
 Time spent ~6 hours(!)
 - [x] Create implmentation
+
+
 0.3 - Created math functions
 Time spent ~10 hours(!)
 - [x] Create add, subtract, divide, multiply by porting from article
 - [x] Add power function
 - [x] Add abs function
+
+
 0.2 - created function definition and static test
 Time spent ~45 min: 08:34 - 09:15
 - [x] Create stub function `function irr(int[] memory values, int guess) external pure returns(int)` that returns a static variable
 - [x] Set up a passing stub test
+
+
 0.1 - hello world and test framework
 Time spent ~1hr: 07:31 - 08:32
 - [x] Decide on [[ganache-cli]] vs [[Hardhat]] - decided on HardHat
