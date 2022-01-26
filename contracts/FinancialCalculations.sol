@@ -1,9 +1,6 @@
 pragma solidity ^0.8.0;
 
 contract FinancialCalculations {
-    //Number of decimals supported
-    uint256 public constant precision = 10;
-
     function irr(int256[] memory cashFlows, int256 guess)
         public
         pure
