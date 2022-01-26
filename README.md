@@ -2,7 +2,7 @@
 - Finished IRR calculation, described and tested in IrrTest.js
 - Time spent: about 20 hours
 - Biggest hurdles
-	- Math - I created an implementation in c# in about an hours or two, then tried to convert that project to use just ints - this was miserable, ended up doing research on fixed point math with solidity and took pieces of a math library and added what I needed to it.
+	- Math - I created an implementation in c# in about an hour or two, then tried to convert that project to use just ints - this was miserable, ended up doing research on fixed point math with solidity and took pieces of a math library and added what I needed to it.
 	- Not knowing solidity - not having done anythign in solidity before I had a bit of an uphill battle deciding on tooling for development, running tests etc. I would have liked to write the tests in solidity as well, but ended up going with the defaults provided by hardhat.
 - Not finished
 	- Role based permissions
