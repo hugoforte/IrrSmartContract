@@ -9,7 +9,6 @@
 		- Was going to implement based on this article: https://micha-roon.medium.com/limiting-access-in-smart-contracts-11b82d761931 to offload the managements of users and groups to a separate contract. I did not have time to implement this unfortunately
 	- Breaking calculation before max iterations - the hasPoloynomialConverged is unfortunately not working at the moment, this would be my first fix.
 	- Gas estimation - Remix calculated it it be infinite based on the looping, I did not have time to dig deeper into this.
-	- Breaking when irr is accurate enough - the hasPoloynomialConverged function is not working
 
 ## Dependencies and running
 - Node
