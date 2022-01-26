@@ -2,24 +2,6 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
 describe("FinancialCalculations", function () {
-  it("Should return correct IRR", async function () {
-    //Arrange
-    const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
-    const financialCalculations = await FinancialCalculations.deploy();
-    await financialCalculations.deployed();
-    var guess = 1;
-    var cashFlows = [-100, 14, 25, 16, 12, 79, 36, 42]
-
-    //Act
-    var actual = await financialCalculations.irr(cashFlows, guess);
-    var integerPart = await financialCalculations.integer(actual);
-    var decimalPart = await financialCalculations.fractional(actual);
-
-    //Assert
-    AssertIntegersAreEqual(integerPart, 0);
-    AssertDecimalsAreEqual(decimalPart, 1694776342, 10);
-  });
-
   it("Should return correct IRRWhenUsingFractions", async function () {
     //Arrange
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
@@ -40,7 +22,7 @@ describe("FinancialCalculations", function () {
     //Assert
     var expected = 19883;
     AssertIntegersAreEqual(integerPart, 0);
-    AssertDecimalsAreEqual(decimalPart, 1694776342, 10);
+    AssertDecimalsAreEqual(decimalPart, 1988344138, 10);
   });
 
   it("Should be able to determine when the polynomial has converged", async function () {
@@ -48,19 +30,29 @@ describe("FinancialCalculations", function () {
     const FinancialCalculations = await ethers.getContractFactory("FinancialCalculations");
     const financialCalculations = await FinancialCalculations.deploy();
     await financialCalculations.deployed();
+    var negativeOne = await financialCalculations.newFixed(-1);
     var largerThanConvergence = await financialCalculations.newFixedFraction(1, 10 ** 5);
     var onConvergence = await financialCalculations.newFixedFraction(1, 10 ** 6);
     var smallerThanConvergence = await financialCalculations.newFixedFraction(1, 10 ** 7);
+    var largerThanConvergenceButNegative = await financialCalculations.multiply(largerThanConvergence, negativeOne);
+    var onConvergenceButNegative = await financialCalculations.multiply(onConvergence, negativeOne);
+    var smallerThanConvergenceButNegative = await financialCalculations.multiply(smallerThanConvergence, negativeOne);
 
     //Act
     var largerShouldBeFalse = await financialCalculations.hasPolynomialConverged(largerThanConvergence);
     var equalShouldBeTrue = await financialCalculations.hasPolynomialConverged(onConvergence);
     var largerShouldBeTrue = await financialCalculations.hasPolynomialConverged(smallerThanConvergence);
+    var largerButNegativeShouldBeFalse = await financialCalculations.hasPolynomialConverged(largerThanConvergenceButNegative);
+    var equalButNegativeShouldBeTrue = await financialCalculations.hasPolynomialConverged(onConvergenceButNegative);
+    var largerButNegativeShouldBeTrue = await financialCalculations.hasPolynomialConverged(smallerThanConvergenceButNegative);
 
     //Assert
     expect(largerShouldBeFalse).to.equal(false);
     expect(equalShouldBeTrue).to.equal(true);
     expect(largerShouldBeTrue).to.equal(true);
+    expect(largerButNegativeShouldBeFalse).to.equal(false);
+    expect(equalButNegativeShouldBeTrue).to.equal(true);
+    expect(largerButNegativeShouldBeTrue).to.equal(true);
   });
 
   it("Should calculate IRRPolynomial for initial cash position", async function () {

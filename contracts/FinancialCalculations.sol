@@ -11,7 +11,7 @@ contract FinancialCalculations {
     {
         require(
             (0 <= guess && guess <= 10),
-            "Guess has to be a decimal representation between 1 (representing 10%) and 9(representing 90%"
+            "Guess has to be a decimal representation between 1 (representing 10%) and 9(representing 90%)"
         );
 
         //Convert cashflows to fractions
@@ -28,15 +28,19 @@ contract FinancialCalculations {
         pure
         returns (int256)
     {
-        //Guess only supports single decimals, 0.2 => 2, 0.09 will not work
         int256 currentIrrPolynomial = 0;
         int256 currentDerivative = 0;
         int256 quotient;
+        int8 maxIterations = 15;
+        int8 currentIteration = 1;
         bool doMore = true;
 
         currentIrrPolynomial = calcSumIrrPolynomial(cashFlows, convergingIrr);
-        //while (hasPolynomialConverged(currentIrrPolynomial)) {
-        while (doMore) {
+        while (
+            currentIteration < maxIterations 
+            //TODO fix function to break after irr is good enough.
+            // || hasPolynomialConverged(currentIrrPolynomial)
+        ) {
             currentDerivative = calcSumIrrDerivative(cashFlows, convergingIrr);
             quotient = divide(currentIrrPolynomial, currentDerivative);
             convergingIrr = subtract(convergingIrr, quotient);
@@ -44,6 +48,7 @@ contract FinancialCalculations {
                 cashFlows,
                 convergingIrr
             );
+            currentIteration++;
             doMore = false;
         }
         return convergingIrr;
@@ -56,6 +61,7 @@ contract FinancialCalculations {
     {
         //TODO - fix hard coding
         int256 convergencePoint = newFixedFraction(1, 10**6);
+        irrPolynomial = abs(irrPolynomial);
         return irrPolynomial <= convergencePoint;
     }
 
