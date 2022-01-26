@@ -17,16 +17,16 @@
 to run from directory: `npx hardhat test`
 
 ## Trade-offs
-- Extremely inefficient - I've done no optimizations at all - takes 10 seconds to run (gas estimation) (c# code runs in milliseconds).
+- Extremely inefficient - I've done no optimizations at all - takes 10 seconds to run (c# code runs in milliseconds). Assuming this is based on the way I'm performing math.
+- Ported and extended a rudamentary math library that splits the int and decimal values
 - Made all functions public for testing purposes - not something I'd do with productionalized code
-- Created/ported a rudamentary math library that splits the int int int and decimal
-- Only supports -1 > IRR's < 1, assumes int portion of 0 and just returns the decimal portion
+- Only supports return value of -1 > IRR < 1, assumes int portion of 0 and just returns the decimal portion
 	- Would include a better math library to deal with this.
 - Will only accept whole dollar amounts for cashflows
 	- Could be refactored to do cents - but value of that is probably negligble
-- Not matching to the excel IRR - which returns 0.2 for the given cashflows, but I am instead using the NewtonRaphson method which is more accurate.
-- Initial guess is not optimal, it uses first years return if not passed in
-	- Implementing the improved initial guess in the paper above instead of the naive first years return. From this paper: https://www.researchgate.net/publication/338749495_Calculating_Internal_Rate_of_Return_IRR_in_Practice_using_Improved_Newton-Raphson_Algorithm
+- Not matching to the excel IRR - which returns 0.2 for the given cashflows, but I am instead using the NewtonRaphson method which is more accurate in my research.
+- Passing in initial guess is not optimal in my opinion, 
+	- Can be improved by Implementing the improved initial guess. From this paper: https://www.researchgate.net/publication/338749495_Calculating_Internal_Rate_of_Return_IRR_in_Practice_using_Improved_Newton-Raphson_Algorithm
 
 ## Releases
 0.3 - Created IRR implementation
